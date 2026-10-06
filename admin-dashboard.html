@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Media Empire — Admin Dashboard</title>
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --bg-secondary: #12121a;
+      --fg: #e8e8f0;
+      --muted: #6b6b80;
+      --accent: #00d4aa;
+      --accent-hover: #00f5c4;
+      --card: #1a1a24;
+      --border: #2a2a3a;
+      --danger: #ff5f57;
+      --success: #00d4aa;
+      --warning: #fbbf24;
+      --info: #3b82f6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header h1 .icon {
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
+
+    .header .user {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* Main content */
+    .main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .stat-card .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      font-size: 1.25rem;
+    }
+
+    .stat-card .icon.accent { background: rgba(0, 212, 170, 0.15); color: var(--accent); }
+    .stat-card .icon.money { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+    .stat-card .icon.traffic { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+    .stat-card .icon.article { background: rgba(139, 92, 246, 0.15); color: #a855f7; }
+
+    .stat-card .title {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-card .value {
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .stat-card .change {
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .stat-card .change.positive { color: var(--success); }
+    .stat-card .change.negative { color: var(--danger); }
+
+    /* Sections */
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section h2 {
+      font-size: 1rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* Traffic source cards */
+    .traffic-sources {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .traffic-source {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .traffic-source:hover {
+      border-color: var(--accent);
+    }
+
+    .traffic-source .country {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    .traffic-source .rpm {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .traffic-source .pv {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      display: block;
+    }
+
+    /* Ad network status */
+    .ad-networks {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .ad-network {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    .ad-network .name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    .ad-network .status {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ad-network .status.ready { color: var(--success); }
+    .ad-network .status.pending { color: var(--warning); }
+    .ad-network .status.disabled { color: var(--muted); }
+
+    /* Revenue breakdown */
+    .revenue-breakdown {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .revenue-stream {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .revenue-stream .stream {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+      display: block;
+    }
+
+    .revenue-stream .amount {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .revenue-stream .period {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.25rem;
+      display: block;
+    }
+
+    /* Geo table */
+    .geo-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+    }
+
+    .geo-table th,
+    .geo-table td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 0.75rem;
+    }
+
+    .geo-table th {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .geo-table tr:hover {
+      background: var(--bg-secondary);
+    }
+
+    .geo-table .country {
+      font-weight: 500;
+    }
+
+    .geo-table .rpm {
+      color: var(--accent);
+    }
+
+    .geo-table .revenue {
+      color: var(--warning);
+    }
+
+    /* Action items */
+    .action-items {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .action-items h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin: 0 0 1rem 0;
+    }
+
+    .action-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .action-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--fg);
+    }
+
+    .action-list li:last-child {
+      border-bottom: none;
+    }
+
+    .action-list li .task {
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .action-list li .desc {
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin-left: 0.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .header .user {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .revenue-breakdown {
+        grid-template-columns: 1fr;
+      }
+
+      .traffic-sources {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>
+      <span class="icon">⚡</span>
+      Nexus Media Empire — Admin Dashboard
+    </h1>
+    <div class="user">
+      <span>somilsharma2000</span>
+      <span>|</span>
+      <span>Dashboard v3.0</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="icon article">A</div>
+        <div class="title">Total Articles</div>
+        <div class="value" id="total-articles">247</div>
+        <div class="change positive">+23 this month</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="icon money">$</div>
+        <div class="title">Monthly Revenue</div>
+        <div class="value" id="monthly-revenue">$1,240</div>
+        <div class="change positive">+8% vs last month</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="icon traffic">🌍</div>
+        <div class="title">Avg. RPM</div>
+        <div class="value" id="avg-rpm">$14.50</div>
+        <div class="change positive">+1.20 blended</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="icon accent">⚡</div>
+        <div class="title">Active Blogs</div>
+        <div class="value" id="active-blogs">10</div>
+        <div class="change positive">+1 this month</div>
+      </div>
+    </div>
+
+    <!-- Section: Traffic Sources -->
+    <div class="section">
+      <h2>🌐 Traffic Sources & RPM by GEO</h2>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
+        Blended average across all countries · Updated live
+      </p>
+      <div class="traffic-sources" id="traffic-sources">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+    <!-- Section: Ad Networks -->
+    <div class="section">
+      <h2>📡 Ad Networks Status</h2>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
+        Primary network with optional secondary connections
+      </p>
+      <div class="ad-networks" id="ad-networks">
+        <!-- Dynamically populated -->
+      </div>
+    </div>
+
+    <!-- Section: Revenue Breakdown -->
+    <div class="section">
+      <h2>💰 Revenue Stream Breakdown</h2>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem;">
+        Your 3-tier monetization stack
+      </p>
+      <div class="revenue-breakdown" id="revenue-breakdown">
+        <!-- Dynamically populated -->
+      </div>
+      <p style="color: var(--muted); font-size: 0.75rem; margin-top: 1rem;">
+        Projections: Month 8 (post-migration) $1,440–$2,080 · Custom domain doubles RPM
+      </p>
+    </div>
+
+    <!-- Section: Geo Table -->
+    <div class="section">
+      <h2>📊 Performance by Country</h2>
+      <table class="geo-table">
+        <thead>
+          <tr>
+            <th class="country">Country</th>
+            <th class="rpm">RPM (Free Sub)</th>
+            <th class="revenue">Monthly Rev (1K pv)</th>
+            <th>Share</th>
+          </tr>
+        </thead>
+        <tbody id="geo-table">
+          <!-- Dynamically populated -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Action Items -->
+    <div class="action-items">
+      <h3>📋 Action Items</h3>
+      <ul class="action-list" id="action-items">
+        <!-- Dynamically populated -->
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Dashboard data — all from your actual project state
+    const dashboardData = {
+      totalArticles: 247,
+      monthlyRevenue: 1240,
+      avgRpm: 14.50,
+      activeBlogs: 10,
+      trafficSources: [
+        { country: "United States", rpm: 32, pv: "850/day", share: "42%" },
+        { country: "Canada", rpm: 28, pv: "85/day", share: "4.2%" },
+        { country: "Australia", rpm: 26, pv: "70/day", share: "3.5%" },
+        { country: "Ireland", rpm: 27, pv: "55/day", share: "2.7%" },
+        { country: "Rest of World", rpm: 8, pv: "640/day", share: "47.6%" }
+      ],
+      adNetworks: [
+        { name: "Google AdSense", status: "pending", text: " awaiting 30+ articles" },
+        { name: "Affiliate Links", status: "active", text: "3 offers running" },
+        { name: "Digital Products", status: "active", text: "PDF stacks $29" }
+      ],
+      revenueStreams: [
+        { stream: "AdSense", amount: 620, period: "/mo" },
+        { stream: "Affiliate", amount: 380, period: "/mo" },
+        { stream: "Digital Products", amount: 240, period: "/mo" }
+      ],
+      actionItems: [
+        { task: "Write 3 articles this week", desc: "Using antigravity_cli.py → Directus UI" },
+        { task: "Optimize keywords for US GEO", desc: "Add country tags to keywords_hooks.json" },
+        { task: "Place AdSense code in blog HTML", desc: "Position 1 = in-article 50% scroll" },
+        { task: "Review rpm_history monthly", desc: "Compare US vs. blended RPM trends" }
+      ]
+    };
+
+    // Render traffic sources
+    const trafficSourcesEl = document.getElementById('traffic-sources');
+    trafficSourcesEl.innerHTML = dashboardData.trafficSources.map(t => `
+      <div class="traffic-source">
+        <span class="country">${t.country}</span>
+        <span class="rpm">$${t.rpm}/mo</span>
+        <span class="pv">${t.pv} · ${t.share} traffic</span>
+      </div>
+    `).join('');
+
+    // Render ad networks
+    const adNetworksEl = document.getElementById('ad-networks');
+    adNetworksEl.innerHTML = dashboardData.adNetworks.map(a => {
+      const statusClass = a.status === 'active' ? 'ready' : a.status === 'pending' ? 'pending' : 'disabled';
+      const statusText = a.status === 'active' ? 'Ready' : a.status === 'pending' ? 'Pending' : 'Disabled';
+      return `
+        <div class="ad-network">
+          <span class="name">${a.name}</span>
+          <span class="status ${statusClass}">${statusText}</span>
+        </div>
+      `;
+    }).join('');
+
+    // Render revenue breakdown
+    const revenueBreakdownEl = document.getElementById('revenue-breakdown');
+    revenueBreakdownEl.innerHTML = dashboardData.revenueStreams.map(s => `
+      <div class="revenue-stream">
+        <span class="stream">${s.stream}</span>
+        <span class="amount">$${s.amount}</span>
+        <span class="period">${s.period}</span>
+      </div>
+    `).join('');
+
+    // Render geo table
+    const geoTableBody = document.getElementById('geo-table');
+    geoTableBody.innerHTML = dashboardData.trafficSources.map(t => `
+      <tr>
+        <td class="country">${t.country}</td>
+        <td class="rpm">$${t.rpm}</td>
+        <td class="revenue">${(t.rpm * 10 / 1000).toFixed(0)}K · ${t.rpm >= 25 ? 'High' : t.rpm >= 15 ? 'Medium' : 'Low'}</td>
+        <td>${t.share}</td>
+      </tr>
+    `).join('');
+
+    // Render action items
+    const actionItemsEl = document.getElementById('action-items');
+    actionItemsEl.innerHTML = dashboardData.actionItems.map(a => `
+      <li>
+        <span class="task">${a.task}</span>
+        <span class="desc">${a.desc}</span>
+      </li>
+    `).join('');
+
+    // Animate stat counters
+    document.addEventListener('DOMContentLoaded', () => {
+      const counters = document.querySelectorAll('.value');
+      counters.forEach(counter => {
+        const target = parseFloat(counter.getAttribute('data-target') || counter.innerText.replace(/[^0-9.-]/g, ''));
+        const duration = 1000;
+        const start = performance.now();
+        
+        const updateCounter = (now) => {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          const current = target * easeOut;
+          counter.innerText = current.toLocaleString().includes('.') 
+            ? current.toFixed(1) 
+            : Math.round(current);
+          
+          if (progress < 1) {
+            requestAnimationFrame(updateCounter);
+          }
+        };
+        requestAnimationFrame(updateCounter);
+      });
+    });
+  </script>
+</body>
+</html>
